@@ -51,6 +51,12 @@ static const Layout layouts[] = {
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
 	{ MODKEY|ShiftMask,             KEY,      tag,            {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask|ShiftMask, KEY,      toggletag,      {.ui = 1 << TAG} },
+#define XF86AudioRaiseVolume		0x1008ff13
+#define XF86AudioLowerVolume		0x1008ff11
+#define XF86AudioMute				0x1008ff12
+#define XF86AudioMicMute			0x1008FFB2
+#define XF86MonBrightnessDown		0x1008ff03
+#define XF86MonBrightnessUp			0x1008ff02
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
@@ -58,13 +64,30 @@ static const Layout layouts[] = {
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
-static const char *termcmd[]  = { "st", NULL };
+static const char *termcmd[]  = { "kitty", NULL };
+static const char *audiovolupcmd[]  = { "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+10%", NULL };
+static const char *audiovoldowncmd[]  = { "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-10%", NULL };
+static const char *audiomutecmd[]  = { "pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle", NULL };
+static const char *audiomicmutecmd[]  = { "pactl", "set-source-mute", "@DEFAULT_SOURCE@", "toggle", NULL };
+static const char *brightnessupcmd[]  = { "brightnessctl", "set", "+5%", NULL };
+static const char *brightnessdowncmd[]  = { "brightnessctl", "set", "5%-", NULL };
+static const char *scrotcmd[]  = { "scrot", "-t", "25", NULL };
+static const char *scrotfocusedcmd[]  = { "scrot", "--focused", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
+	{ 0,                            XF86AudioRaiseVolume,      spawn,		   {.v = audiovolupcmd } },
+	{ 0,                            XF86AudioLowerVolume,      spawn,          {.v = audiovoldowncmd } },
+	{ 0,                            XF86AudioMute,             spawn,          {.v = audiomutecmd } },
+	{ 0,                            XF86AudioMicMute,          spawn,          {.v = audiomicmutecmd } },
+	{ 0,                            XF86MonBrightnessUp,       spawn,          {.v = brightnessupcmd } },
+	{ 0,                            XF86MonBrightnessDown,     spawn,          {.v = brightnessdowncmd } },
+	{ 0,            				XK_Print,   spawn,         {.v = scrotcmd } },
+	{ ShiftMask,    				XK_Print,   spawn,         {.v = scrotfocusedcmd } },
+	{ ControlMask,  				XK_Print,   spawn,         SHCMD("sleep 1s;scrot --select") },
 	{ MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
